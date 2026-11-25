@@ -1,0 +1,2 @@
+ALTER TABLE blocks DROP COLUMN IF EXISTS description;
+ALTER TABLE blocks DROP COLUMN IF EXISTS is_active;

@@ -1,7 +1,5 @@
 package com.example.TroEasyAPI.service;
 
-import java.time.LocalDateTime;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,24 +21,21 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-
+    // register
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
-            throw new ConflictException("Tên đăng nhập '" + request.username() + "' đã tồn tại!");
+            throw new ConflictException("Tên đăng nhập đã tồn tại!");
         }
-
-        User user = new User();
-        user.setFullName(request.fullName());
-        user.setUsername(request.username());
-        user.setPassword(passwordEncoder.encode(request.password())); // Mã hóa BCrypt mật khẩu
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
-
+        User user = User.builder()
+                .fullName(request.fullName())
+                .username(request.username())
+                .password(passwordEncoder.encode(request.password()))
+                .build();
         User savedUser = userRepository.save(user);
         String token = jwtTokenProvider.generateToken(savedUser.getId(), savedUser.getUsername());
-        return AuthResponse.of(token);
+        return new AuthResponse(token);
     }
-
+    // login
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new UnauthorizedException("Tên đăng nhập hoặc mật khẩu không chính xác!"));
@@ -49,9 +44,8 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new UnauthorizedException("Tên đăng nhập hoặc mật khẩu không chính xác!");
         }
-
         // Tạo token chứa userId và username
         String token = jwtTokenProvider.generateToken(user.getId(), user.getUsername());
-        return AuthResponse.of(token);
+        return new AuthResponse(token);
     }
 }
