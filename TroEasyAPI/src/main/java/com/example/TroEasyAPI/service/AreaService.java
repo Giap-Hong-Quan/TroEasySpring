@@ -53,4 +53,22 @@ public class AreaService {
         }
         areaRepository.deleteById(id);
     }
+
+    // PUT: Cập nhật thông tin khu trọ
+    public AreaResponse updateArea(Long id, AreaRequest areaRequest) {
+        Area area = areaRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Khu trọ không tồn tại!"));
+
+        // Nếu đổi tên khu trọ, check xem tên mới có trùng với khu khác không
+        if (!area.getName().equals(areaRequest.name()) && areaRepository.existsByName(areaRequest.name())) {
+            throw new ConflictException("Tên khu trọ đã tồn tại!");
+        }
+        // Đè dữ liệu mới từ request vào area cũ
+        areaMapper.updateArea(areaRequest, area);
+
+        // Lưu lại xuống DB
+        Area updatedArea = areaRepository.save(area);
+
+        return areaMapper.toResponse(updatedArea);
+    }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 import com.example.TroEasyAPI.dto.areadto.AreaRequest;
 import com.example.TroEasyAPI.dto.areadto.AreaResponse;
@@ -21,4 +22,10 @@ public interface AreaMapper {
     AreaResponse toResponse(Area area);
 
     List<AreaResponse> toResponseList(List<Area> areas);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    void updateArea(AreaRequest request, @MappingTarget Area area);
 }

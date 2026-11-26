@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.example.TroEasyAPI.dto.authdto.AuthResponse;
 import com.example.TroEasyAPI.dto.authdto.LoginRequest;
 import com.example.TroEasyAPI.dto.authdto.RegisterRequest;
+import com.example.TroEasyAPI.dto.authdto.UserResponse;
 import com.example.TroEasyAPI.entity.User;
 import com.example.TroEasyAPI.exception.ConflictException;
 import com.example.TroEasyAPI.exception.UnauthorizedException;
@@ -47,5 +48,12 @@ public class AuthService {
         // Tạo token chứa userId và username
         String token = jwtTokenProvider.generateToken(user.getId(), user.getUsername());
         return new AuthResponse(token);
+    }
+
+    // Lấy thông tin user đang đăng nhập
+    public UserResponse getCurrentUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UnauthorizedException("Không tìm thấy thông tin tài khoản!"));
+        return new UserResponse(user.getId(), user.getFullName(), user.getUsername(), user.getCreatedAt());
     }
 }
