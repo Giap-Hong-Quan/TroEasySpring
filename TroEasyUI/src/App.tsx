@@ -8,7 +8,7 @@ function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <RouterProvider router={router} />
-            <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+            <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
         </QueryClientProvider>
     );
 }

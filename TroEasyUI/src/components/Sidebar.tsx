@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import logo from "../assets/logo.png";
-import { getCurrentUser, logout } from "../services/authService.js";
+import { useCurrentUser, useLogout } from "../hooks/useAuth.ts";
 import {
   LayoutGrid, House, UsersRound, FileText, Zap, CreditCard,
   Wrench, ChartNoAxesCombined, ChartColumnIncreasing,
@@ -50,29 +49,20 @@ export default function Sidebar({ open, onClose, activePage, onSelectPage }: Sid
   const navigate = useNavigate();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [profileError, setProfileError] = useState("");
 
-  const showAccountInfo = async () => {
+  const { data: profile, isLoading: profileLoading, error: profileQueryError } = useCurrentUser();
+  const logoutMutation = useLogout();
+
+  const showAccountInfo = () => {
     setAccountMenuOpen(false);
     setProfileOpen(true);
-    setProfileLoading(true);
-    setProfileError("");
-    try {
-      setProfile(await getCurrentUser());
-    } catch (error: any) {
-      setProfileError(error.response?.data?.message || "Không tải được thông tin tài khoản.");
-    } finally {
-      setProfileLoading(false);
-    }
   };
 
   const handleLogout = () => {
-    logout();
-    toast.success("Đã đăng xuất thành công.");
-    navigate("/login", { replace: true });
+    logoutMutation.mutate();
   };
+
+  const profileError = (profileQueryError as any)?.response?.data?.message || profileQueryError?.message || "";
 
   const accountName = profile?.fullName || profile?.username || "Tài khoản";
   const avatarText = accountName.split(/\s+/).slice(-2).map((part: string) => part[0]).join("").toUpperCase();
@@ -117,9 +107,9 @@ export default function Sidebar({ open, onClose, activePage, onSelectPage }: Sid
                         navigate(path || "/");
                       }}
                       aria-current={selected ? "page" : undefined}
-                      className={`relative flex w-full items-center gap-3 rounded-[11px] px-[13px] py-[11px] text-left text-[12.9px] font-semibold transition-colors ${selected ? "bg-[#efecff] text-[#5e4bd5]" : "text-[#797e95] hover:bg-[#f5f4fb] hover:text-[#5140bf]"}`}
+                      className={`relative flex w-full items-center gap-3 rounded-[11px] px-[13px] py-[11px] text-left text-[12.9px] font-semibold transition-colors ${selected ? "bg-[#fff2eb] text-[#ff6d1b]" : "text-[#797e95] hover:bg-[#fff7f2] hover:text-[#e0580e]"}`}
                     >
-                      {selected && <span className="absolute inset-y-[10px] left-0 w-[3px] rounded-r bg-[#7060e9]" />}
+                      {selected && <span className="absolute inset-y-[10px] left-0 w-[3px] rounded-r bg-[#ff6d1b]" />}
                       <Icon size={19} strokeWidth={1.8} className="shrink-0" />
                       <span className="flex-1 whitespace-nowrap">{label}</span>
                       {badge && <span className="rounded-[7px] bg-[#ffedf0] px-[7px] py-[2px] text-[10px] font-extrabold text-[#e06470]">{badge}</span>}
@@ -133,7 +123,7 @@ export default function Sidebar({ open, onClose, activePage, onSelectPage }: Sid
 
         <div className="px-[13px] pb-3 pt-3">
           <div className="relative flex items-center gap-2.5 border-t border-[#f1f1f6] px-2 pt-3.5">
-            <span className="grid h-[35px] w-[35px] shrink-0 place-items-center rounded-xl bg-[#e3ddff] text-[11px] font-extrabold text-[#5b49cb]">{avatarText || "U"}</span>
+            <span className="grid h-[35px] w-[35px] shrink-0 place-items-center rounded-xl bg-[#ffe2d1] text-[11px] font-extrabold text-[#ff6d1b]">{avatarText || "U"}</span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-[12px] font-bold text-[#2d3149]">{accountName}</p>
               <p className="truncate text-[10.5px] text-[#989aab]">{profile?.username ? `@${profile.username}` : "Tài khoản đang đăng nhập"}</p>
@@ -144,7 +134,7 @@ export default function Sidebar({ open, onClose, activePage, onSelectPage }: Sid
               aria-haspopup="menu"
               aria-expanded={accountMenuOpen}
               onClick={() => setAccountMenuOpen((current) => !current)}
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#a2a3b3] hover:bg-[#f5f4fb] hover:text-[#5b49cb]"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#a2a3b3] hover:bg-[#fff7f2] hover:text-[#ff6d1b]"
             >
               <MoreHorizontal size={18} />
             </button>
